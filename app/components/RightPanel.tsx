@@ -6,7 +6,21 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { SequencedMover } from "../type/Mover";
 import { Parser, Tokenizer } from "../type/Parser";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+
+const startValue = `new MoverBuilder()
+  .Uniform(60, e => e
+    .Start(new Vector2(0, 3))
+    .Line(new Vector2(0.7, 1.3))
+    .Arc(new Vector2(2, 1.5), 0.8)
+    .BezierContinue(2.9, new Vector2(2, -3), new Vector2(0, -3), 100)
+    .ArcContinue(1, -2)
+    .ArcContinue(1.4, 2)
+    .BezierContinue(1, new Vector2(-2, 1.5), new Vector2(-3, 2), 100)
+    .LineContinue(0.4)
+    .Bezier(new Vector2(-3, 4), new Vector2(-1, 2), new Vector2(0, 5), 100)
+  );
+`
 
 type Props = {
   onChange: (mover: SequencedMover) => void;
@@ -15,6 +29,8 @@ type Props = {
 export default function RightPanel({ onChange }: Props) {
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [inputValue, setInputValue] = useState(startValue);
+  const didInitRef = useRef(false);
 
   const handleInputChange = (value: string) => {
     if (false) {
@@ -37,6 +53,14 @@ export default function RightPanel({ onChange }: Props) {
     setErrorMessage("");
   }
 
+  // Call onChange once with the initial startValue (guarded against React StrictMode double effect)
+  useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+    handleInputChange(startValue);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Paper elevation={1} sx={{ p: 2, height: "100%" }}>
       <Stack spacing={2}>
@@ -48,7 +72,6 @@ export default function RightPanel({ onChange }: Props) {
           rows={20}
           variant="outlined"
           fullWidth
-          onChange={e => handleInputChange(e.target.value)}
           slotProps={{
             input: { style: { 
               fontFamily: "monospace",
@@ -80,6 +103,11 @@ export default function RightPanel({ onChange }: Props) {
               target.selectionStart = target.selectionEnd = start + 1 + indent.length;
               e.preventDefault();
             }
+          }}
+          value={inputValue}
+          onChange={e => {
+            setInputValue(e.target.value);
+            handleInputChange(e.target.value);
           }}
         />
         {errorMessage && (

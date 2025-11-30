@@ -309,12 +309,13 @@ export { Tokenizer, Parser };
 new MoverBuilder()
   .Uniform(60, e => e
     .Start(new Vector2(0, 3))
-    .Line(new Vector2(1, 1))
-    .LineContinue(1.2)
-    .Arc(new Vector2(0, 0), -1.5)
-    .LineContinue(1.2)
-    .ArcContinue(1, 3)
-    .Bezier(new Vector2(-2, 0), new Vector2(0, 1), new Vector2(2, 2), 100)
-    .BezierContinue(1, new Vector2(2, 0), new Vector2(3, 0), 100)
+    .Line(new Vector2(0.7, 1.3))
+    .Arc(new Vector2(2, 1.5), 0.8)
+    .BezierContinue(2.9, new Vector2(2, -3), new Vector2(0, -3), 100)
+    .ArcContinue(1, -2)
+    .ArcContinue(1.4, 2)
+    .BezierContinue(1, new Vector2(-2, 1.5), new Vector2(-3, 2), 100)
+    .LineContinue(0.4)
+    .Bezier(new Vector2(-3, 4), new Vector2(-1, 2), new Vector2(0, 5), 100)
   );
 */
