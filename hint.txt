@@ -1,0 +1,11 @@
+new MoverBuilder()
+    .Uniform(40, e => e
+        .Start(new Vector2(0, 0))
+        .Line(new Vector2(10, 0))
+        .LineContinue(n100)
+        .Arc(new Vector2(50, 0), 90)
+        .ArcContinue(50, 90)
+        .Bezier(new Vector2(20, 0), new Vector2(30, 0), new Vector2(40, 0), 100)
+        .BezierContinue(60, new Vector2(60, 0), new Vector2(70, 0), 100)
+    )
+    .Sine(60, e => e)
