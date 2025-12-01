@@ -10,20 +10,20 @@ import { useState, useEffect, useRef } from "react";
 
 const startValue = `new MoverBuilder()
   .Uniform(100, e => e
-    .Start(new Vector2(0, 3))
-    .Line(new Vector2(0.7, 1.3))
-    .Arc(new Vector2(2, 1.5), 0.8)
+    .Start(new Vector2(0, 3f))
+    .Line(new Vector2(0.7f, 1.3f))
+    .Arc(new Vector2(2f, 1.5f), 0.8f)
   )
   .Sine(220, e => e
-    .BezierContinue(2.9, new Vector2(2, -3), new Vector2(0, -3), 100)
-    .ArcContinue(1, -2)
-    .LineContinue(0.7)
-    .ArcContinue(1.2, 2)
+    .BezierContinue(2.9f, new Vector2(2f, -3f), new Vector2(0, -3f), 100)
+    .ArcContinue(1f, -2f)
+    .LineContinue(0.7f)
+    .ArcContinue(1.2f, 2f)
   )
   .SmoothStep(150, e => e
-    .BezierContinue(1, new Vector2(-2, 1.5), new Vector2(-3, 2), 100)
-    .LineContinue(0.4)
-    .Bezier(new Vector2(-3, 4), new Vector2(-1, 2), new Vector2(0, 5), 100)
+    .BezierContinue(1f, new Vector2(-2, 1.5f), new Vector2(-3, 2f), 100)
+    .LineContinue(0.4f)
+    .Bezier(new Vector2(-3, 4f), new Vector2(-1, 2f), new Vector2(0, 5f), 100)
   );
 `
 

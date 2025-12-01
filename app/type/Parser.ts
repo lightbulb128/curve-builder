@@ -56,7 +56,7 @@ class Tokenizer {
         const char = this.peek();
         if (/[0-9\+\-]/.test(char)) {
             let start = this.position;
-            while (this.position < this.content.length && /[0-9\.eE\+\-]/.test(this.peek())) {
+            while (this.position < this.content.length && /[0-9\.eEf\+\-]/.test(this.peek())) {
                 this.position++;
             }
             const numberStr = this.content.slice(start, this.position);
