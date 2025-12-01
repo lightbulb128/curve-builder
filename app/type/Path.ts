@@ -94,9 +94,12 @@ class Arc extends PathBase {
             this.center.x + this.radius * Math.cos(angle),
             this.center.y + this.radius * Math.sin(angle)
         );
-        const direction = new Vector2(
+        const direction = this.endAngle > this.startAngle ? new Vector2(
             -Math.sin(angle),
             Math.cos(angle)
+        ).normalized() : new Vector2(
+            Math.sin(angle),
+            -Math.cos(angle)
         ).normalized();
         return { position, direction };
     }

@@ -268,12 +268,25 @@ new MoverBuilder()
             if (typeof result === 'string') return result;
             builders.push(result);
         }
-        builder.Uniform(duration, pb => {
+        const pbBuilder = (pb: PathBuilder): PathBuilder => {
             for (const b of builders) {
                 pb = b(pb);
             }
             return pb;
-        });
+        };
+        if (methodToken === "Uniform") {
+            builder.Uniform(duration, pbBuilder);
+        } else if (methodToken === "Sine") {
+            builder.Sine(duration, pbBuilder);
+        } else if (methodToken === "Cosine") {
+            builder.Cosine(duration, pbBuilder);
+        } else if (methodToken === "SmoothStep") {
+            builder.SmoothStep(duration, pbBuilder);
+        } else if (methodToken === "InverseSmoothStep") {
+            builder.InverseSmoothStep(duration, pbBuilder);
+        } else {
+            return `Unknown method name: ${methodToken}`;
+        }
         return null;
     }
 

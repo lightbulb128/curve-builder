@@ -15,7 +15,8 @@ type Props = {
 function drawGrid(
   settings: CanvasSetting,
   mover: SequencedMover,
-  setSVGlements: (elements: JSX.Element[]) => void
+  ticks: number,
+  setSVGlements: (elements: JSX.Element[]) => void,
 ) {
   const { width, height, horizontalLines, verticalLines, scale } = settings;
   const canvasWidth = width * scale;
@@ -24,44 +25,49 @@ function drawGrid(
   const elements = [];
 
   // Horizontal lines
-  for (const y of horizontalLines) {
+  const dashLineStyle = { stroke: "#ccc", strokeWidth: 1, strokeDasharray: "6,6" };
+  const solidLineStyle = { stroke: "#999", strokeWidth: 1 };
+  for (let i = 0; i < horizontalLines.length; i++) {
+    const y = horizontalLines[i];
     const { px: _px, py } = settings.worldToCanvas(0, y);
+    const lineStyle = (i == 0 || i == horizontalLines.length - 1) ? solidLineStyle : dashLineStyle;
     const newElement = (<line
       key={`hline-${y}`}
       x1={0}
       y1={py}
       x2={canvasWidth}
       y2={py}
-      stroke="#9e9e9e"
-      strokeWidth={1}
-      strokeDasharray="6,6"
+      {...lineStyle}
     />);
     elements.push(newElement);
   }
 
   // Vertical lines
-  for (const x of verticalLines) {
+  for (let i = 0; i < verticalLines.length; i++) {
+    const x = verticalLines[i];
     const { px, py: _py } = settings.worldToCanvas(x, 0);
+    const lineStyle = (i == 0 || i == verticalLines.length - 1) ? solidLineStyle : dashLineStyle;
     const newElement = (<line
       key={`vline-${x}`}
       x1={px}
       y1={0}
       x2={px}
       y2={canvasHeight}
-      stroke="#9e9e9e"
-      strokeWidth={1}
-      strokeDasharray="6,6"
+      {...lineStyle}
     />);
     elements.push(newElement);
   }
 
   // Draw mover paths
   {
-    const drawStyle = { stroke: "#000", strokeWidth: 2, fill: "none" };
-    const keyPointStyle = { stroke: "#f00", strokeWidth: 1, fill: "#f99", r: 4 };
-    const assistLineStyle = { stroke: "#aaa", strokeWidth: 2, strokeDasharray: "12,12" };
-    const circleCenterStyle = { stroke: "#00f", strokeWidth: 1, fill: "#99f", r: 3 };
-    const bezierControlStyle = { stroke: "#0a0", strokeWidth: 1, fill: "#9a9", r: 3 };
+    const lineStyle = { stroke: "#000", strokeWidth: 2, fill: "none" };
+    const arcStyle = { stroke: "#08f", strokeWidth: 2, fill: "none" };
+    const bezierStyle = { stroke: "#80f", strokeWidth: 2, fill: "none" };
+    const keyPointStyle = { stroke: "#aaa", strokeWidth: 1, fill: "#ccc", r: 4 };
+    const arcAssistLineStyle = { stroke: "#9df", strokeWidth: 2, strokeDasharray: "8,8" };
+    const circleCenterStyle = { stroke: "#08f", strokeWidth: 1, fill: "#9df", r: 3 };
+    const bezierControlStyle = { stroke: "#80f", strokeWidth: 1, fill: "#d9f", r: 3 };
+    const bezierAssistLineStyle = { stroke: "#d9f", strokeWidth: 2, strokeDasharray: "8,8" };
 
     let lastPosition = new Vector2(0, 0);
     let lastDirection = new Vector2(1, 0);
@@ -84,7 +90,7 @@ function drawGrid(
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  {...drawStyle}
+                  {...lineStyle}
                 />
               );
               elements.push(newElement);
@@ -116,7 +122,7 @@ function drawGrid(
                     cx={cx}
                     cy={cy}
                     r={radius * settings.scale * settings.unitPixels}
-                    {...drawStyle}
+                    {...arcStyle}
                   />
                 );
                 elements.push(circleElement);
@@ -125,7 +131,7 @@ function drawGrid(
                   <path
                     key={`arc-${counter}-${x1}-${y1}-${x2}-${y2}`}
                     d={`M ${x1} ${y1} A ${radius * settings.scale * settings.unitPixels} ${radius * settings.scale * settings.unitPixels} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2}`}
-                    {...drawStyle}
+                    {...arcStyle}
                   />
                 );
                 elements.push(newElement);
@@ -138,7 +144,7 @@ function drawGrid(
                     y1={cy}
                     x2={x1}
                     y2={y1}
-                    {...assistLineStyle}
+                    {...arcAssistLineStyle}
                   />
                 );
                 elements.push(radiusElement1);
@@ -149,7 +155,7 @@ function drawGrid(
                     y1={cy}
                     x2={x2}
                     y2={y2}
-                    {...assistLineStyle}
+                    {...arcAssistLineStyle}
                   />
                 );
                 elements.push(radiusElement2);
@@ -179,7 +185,7 @@ function drawGrid(
                       y1={y1}
                       x2={x2}
                       y2={y2}
-                      {...drawStyle}
+                      {...bezierStyle}
                     />
                   );
                   elements.push(newElement);
@@ -199,7 +205,7 @@ function drawGrid(
                     y1={start.py}
                     x2={c1.px}
                     y2={c1.py}
-                    {...assistLineStyle}
+                    {...bezierAssistLineStyle}
                   />
                 );
                 elements.push(controlLine1);
@@ -210,7 +216,7 @@ function drawGrid(
                     y1={end.py}
                     x2={c2.px}
                     y2={c2.py}
-                    {...assistLineStyle}
+                    {...bezierAssistLineStyle}
                   />
                 );
                 elements.push(controlLine2);
@@ -258,27 +264,75 @@ function drawGrid(
     }
   }
 
+  // draw moving object
+  const totalDuration = mover.totalDuration;
+  const startTick = ticks % 60;
+  // console.log("Starttick:", startTick, "TotalDuration:", totalDuration);
+  for (let t = startTick; t <= totalDuration; t += 60) {
+    // console.log("Drawing moving object at t =", t);
+    const {position, velocity} = mover.evaluate(t);
+    // draw a triangle at position, pointing in the direction of velocity
+    const angle = Math.atan2(velocity.y, velocity.x);
+    const size = 0.15;
+    const p1 = settings.worldToCanvas(
+      position.x + size * Math.cos(angle),
+      position.y + size * Math.sin(angle)
+    );
+    const p2 = settings.worldToCanvas(
+      position.x + size * Math.cos(angle + (2 * Math.PI) / 3),
+      position.y + size * Math.sin(angle + (2 * Math.PI) / 3)
+    );
+    const p3 = settings.worldToCanvas(
+      position.x,
+      position.y
+    );
+    const p4 = settings.worldToCanvas(
+      position.x + size * Math.cos(angle + (4 * Math.PI) / 3),
+      position.y + size * Math.sin(angle + (4 * Math.PI) / 3)
+    );
+    const triangle = (
+      <polygon
+        key={`moving-object-${t}-${p1.px}-${p1.py}-${p2.px}-${p2.py}-${p3.px}-${p3.py}`}
+        points={`${p1.px},${p1.py} ${p2.px},${p2.py} ${p3.px},${p3.py} ${p4.px},${p4.py}`}
+        fill="red"
+      />
+    );
+    elements.push(triangle);
+  }
+
   setSVGlements(elements);
 }
 
 export default function CanvasContainer({ settings, mover }: Props) {
   const rafRef = useRef<number | null>(null);
   const [svgElements, setSvgElements] = useState<JSX.Element[]>([]);
+  const [ticks, setTicks] = useState(0);
 
   const settingsRef = useRef(settings);
+  const moverRef = useRef(mover);
+  const ticksRef = useRef(0);
+  
   useEffect(() => {
     settingsRef.current = settings;
-  }, [settings]);
+    moverRef.current = mover;
+    ticksRef.current = ticks;
+  }, [settings, mover, ticks]);
 
   useEffect(() => {
-    let lastTime = 0;
+    let lastTime: number | null = null;
     const frame = (time: number) => {
-      // Aim for ~60fps
-      if (time - lastTime >= 1000 / 60) {
+      if (lastTime === null) {
         lastTime = time;
-        const s = settingsRef.current;
-        drawGrid(s, mover, setSvgElements);
       }
+      const deltaTime = (time - lastTime) / 1000; // seconds
+      lastTime = time;
+      
+      const s = settingsRef.current;
+      const m = moverRef.current;
+      const t = ticksRef.current;
+      drawGrid(s, m, t, setSvgElements);
+      setTicks(prev => prev + deltaTime * 60);
+      
       rafRef.current = requestAnimationFrame(frame);
     };
 
@@ -287,13 +341,14 @@ export default function CanvasContainer({ settings, mover }: Props) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [settings, mover]);
+  }, []);
 
   return (
     <div style={{ overflow: "auto" }}>
       <svg
         style={{
-          border: "2px solid #000",
+          // create a border of 6-6 dashed line around the canvas
+          border: "1px solid #ccc",
           width: settings.width * settings.scale,
           height: settings.height * settings.scale,
         }}

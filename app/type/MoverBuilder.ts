@@ -1,6 +1,6 @@
 import { Mover, SimpleMover, SequencedMover } from "./Mover";
 import { LineSegment, Path, Vector2, Arc, BezierCurve, ApproxBezier, SegmentedPath } from "./Path";
-import { Curve, UniformCurve } from "./Curve";
+import { Curve, SmoothStepCurve, UniformCurve, SineCurve, CosineCurve, InverseSmoothStepCurve } from "./Curve";
 
 
 class PathBuilder {
@@ -38,7 +38,7 @@ class PathBuilder {
         const radius = this.lastPosition.subtract(center).length();
         const endAngle = startAngle + angleRadian;
         const arc = new Arc(center, radius, startAngle, endAngle);
-        console.log("Arc:", center, radius, startAngle, endAngle);
+        // console.log("Arc:", center, radius, startAngle, endAngle);
         this.paths.push(arc);
         const endPosition = new Vector2(
             center.x + radius * Math.cos(endAngle),
@@ -98,14 +98,31 @@ class SequencedMoverBuilder {
         this.movers = [];
     }
 
-    Uniform(duration: number, pathBuilder: (pb: PathBuilder) => PathBuilder) {
+
+    Unified(duration: number, curve: Curve, pathBuilder: (pb: PathBuilder) => PathBuilder) {
         const pb = pathBuilder(new PathBuilder(this.lastPosition, this.lastDirection));
         this.lastPosition = pb.lastPosition;
         this.lastDirection = pb.lastDirection;
         const path = pb.Build();
-        const mover = new SimpleMover(path, duration, new UniformCurve());
+        const mover = new SimpleMover(path, duration, curve);
         this.movers.push(mover);
         return this;
+    }
+
+    Uniform(duration: number, pathBuilder: (pb: PathBuilder) => PathBuilder) {
+        return this.Unified(duration, new UniformCurve(), pathBuilder);
+    }
+    Sine(duration: number, pathBuilder: (pb: PathBuilder) => PathBuilder) {
+        return this.Unified(duration, new SineCurve(), pathBuilder);
+    }
+    Cosine(duration: number, pathBuilder: (pb: PathBuilder) => PathBuilder) {
+        return this.Unified(duration, new CosineCurve(), pathBuilder);
+    }
+    SmoothStep(duration: number, pathBuilder: (pb: PathBuilder) => PathBuilder) {
+        return this.Unified(duration, new SmoothStepCurve(), pathBuilder);
+    }
+    InverseSmoothStep(duration: number, pathBuilder: (pb: PathBuilder) => PathBuilder) {
+        return this.Unified(duration, new InverseSmoothStepCurve(), pathBuilder);
     }
 
     Build(): SequencedMover {

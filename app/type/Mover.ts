@@ -29,7 +29,7 @@ class SimpleMover extends Mover {
         const relativeTime = (this.duration === 0) ? 1 : Math.min(Math.max(timeElapsed / this.duration, 0), 1);
         const t = this.curve.evaluate(relativeTime);
         const pathT = t * this.path.length();
-        const evalAtT = this.path.at(t);
+        const evalAtT = this.path.at(pathT);
         // calculate velocity
         const curveDeriv = this.curve.derivative(relativeTime);
         const pathLength = this.path.length();

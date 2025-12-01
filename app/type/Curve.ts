@@ -42,5 +42,19 @@ class SmoothStepCurve implements Curve {
     }
 }
 
+class InverseSmoothStepCurve implements Curve {
+    // [0, 1] -> [0, 1]
+    evaluate(t: number): number {
+        // use g(x) = x^t/(x^t + (1-x)^t with t=2/3
+        return Math.pow(t, 2/3) / (Math.pow(t, 2/3) + Math.pow(1 - t, 2/3));
+    }
+    derivative(t: number): number {
+        const tPow = Math.pow(t, 2/3);
+        const oneMinusTPow = Math.pow(1 - t, 2/3);
+        const denom = tPow + oneMinusTPow;
+        return (2/3) * (tPow * oneMinusTPow) / (denom * denom);
+    }
+}
+
 export type { Curve };
-export { UniformCurve, SineCurve, CosineCurve, SmoothStepCurve };
+export { UniformCurve, SineCurve, CosineCurve, SmoothStepCurve, InverseSmoothStepCurve };

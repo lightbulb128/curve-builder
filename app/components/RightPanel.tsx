@@ -9,13 +9,18 @@ import { Parser, Tokenizer } from "../type/Parser";
 import { useState, useEffect, useRef } from "react";
 
 const startValue = `new MoverBuilder()
-  .Uniform(60, e => e
+  .Uniform(100, e => e
     .Start(new Vector2(0, 3))
     .Line(new Vector2(0.7, 1.3))
     .Arc(new Vector2(2, 1.5), 0.8)
+  )
+  .Sine(220, e => e
     .BezierContinue(2.9, new Vector2(2, -3), new Vector2(0, -3), 100)
     .ArcContinue(1, -2)
-    .ArcContinue(1.4, 2)
+    .LineContinue(0.7)
+    .ArcContinue(1.2, 2)
+  )
+  .SmoothStep(150, e => e
     .BezierContinue(1, new Vector2(-2, 1.5), new Vector2(-3, 2), 100)
     .LineContinue(0.4)
     .Bezier(new Vector2(-3, 4), new Vector2(-1, 2), new Vector2(0, 5), 100)
@@ -69,7 +74,7 @@ export default function RightPanel({ onChange }: Props) {
         <TextField
           label="Path"
           multiline
-          rows={20}
+          rows={25}
           variant="outlined"
           fullWidth
           slotProps={{
