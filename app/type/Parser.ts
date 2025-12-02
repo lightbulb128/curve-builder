@@ -485,7 +485,7 @@ class Program {
             return `new Vector2(${v.x.toFixed(3)}f, ${v.y.toFixed(3)}f)`;
         }
         const indent = " ".repeat(2);
-        let ret = "new SequencedMover()\n";
+        let ret = "new MoverBuilder()\n";
         for (let i = 0; i < this.moverStatements.length; i++) {
             const ms = this.moverStatements[i];
             ret += indent + `.${ms.method}(${ms.duration}, e => e\n`;

@@ -55,11 +55,11 @@ export default function RightPanel({ setProgram, programString, setProgramString
               "& .MuiInputBase-root": { height: "100%" },
               "& textarea": {
                 height: "100% !important",
-                overflow: "auto",
                 fontFamily: "monospace",
                 fontSize: "14px",
-                whiteSpace: "pre",
-                overflowWrap: "normal",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                overflowWrap: "anywhere",
               },
             }}
             onKeyDown={e => {
