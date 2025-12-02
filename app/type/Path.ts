@@ -22,6 +22,20 @@ class Vector2 {
         if (len === 0) return new Vector2(0, 0);
         return new Vector2(this.x / len, this.y / len);
     }
+    dot(other: Vector2): number {
+        return this.x * other.x + this.y * other.y;
+    }
+    angle(): number {
+        return Math.atan2(this.y, this.x);
+    }
+    rotate(angleRadian: number): Vector2 {
+        const cosA = Math.cos(angleRadian);
+        const sinA = Math.sin(angleRadian);
+        return new Vector2(
+            this.x * cosA - this.y * sinA,
+            this.x * sinA + this.y * cosA
+        );
+    }
 }
 
 type CEval = {

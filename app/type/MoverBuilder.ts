@@ -16,7 +16,8 @@ class PathBuilder {
     }
 
     Start(start: Vector2) {
-        return new PathBuilder(start, this.lastDirection);
+        this.lastPosition = start;
+        return this;
     }
 
     Line(end: Vector2) {

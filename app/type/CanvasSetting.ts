@@ -31,6 +31,12 @@ class CanvasSetting {
         const py = -y * this.unitPixels * this.scale + (this.height * this.scale) / 2;
         return { px, py };
     }
+
+    canvasToWorld(px: number, py: number): { x: number; y: number } {
+        const x = (px - (this.width * this.scale) / 2) / (this.unitPixels * this.scale);
+        const y = -(py - (this.height * this.scale) / 2) / (this.unitPixels * this.scale);
+        return { x, y };
+    }
 }
 
 export default CanvasSetting;

@@ -6,23 +6,51 @@ import { SequencedMover, SimpleMover } from "../type/Mover";
 import { SegmentedPath, Vector2 } from "../type/Path";
 import { LegendToggleRounded } from "@mui/icons-material";
 import { Path, LineSegment, Arc, ApproxBezier } from "../type/Path";
+import { ControlPoint, Parser, Program } from "../type/Parser";
 
 type Props = {
   settings: CanvasSetting;
-  mover: SequencedMover;
+  program: Program,
+  setProgram: (program: Program) => void;
 };
 
-function drawGrid(
+function drawPath(
   settings: CanvasSetting,
   mover: SequencedMover,
-  ticks: number,
-  setSVGlements: (elements: JSX.Element[]) => void,
-) {
+  controlPoints: Array<ControlPoint>,
+): JSX.Element[] {
   const { width, height, horizontalLines, verticalLines, scale } = settings;
   const canvasWidth = width * scale;
   const canvasHeight = height * scale;
-
   const elements = [];
+  
+  const lineStyle = { stroke: "#000", strokeWidth: 2, fill: "none" };
+  const arcStyle = { stroke: "#08f", strokeWidth: 2, fill: "none" };
+  const bezierStyle = { stroke: "#80f", strokeWidth: 2, fill: "none" };
+  const keyPointStyle = { stroke: "#aaa", strokeWidth: 1, fill: "#ccc", r: 4 };
+  const startPointStyle = { stroke: "#aaa", strokeWidth: 1, fill: "#ccc", r: 4 };
+  const arcAssistLineStyle = { stroke: "#9df", strokeWidth: 2, strokeDasharray: "8,8" };
+  const circleCenterStyle = { stroke: "#08f", strokeWidth: 1, fill: "#9df", r: 3 };
+  const bezierControlStyle = { stroke: "#80f", strokeWidth: 1, fill: "#d9f", r: 3 };
+  const bezierAssistLineStyle = { stroke: "#d9f", strokeWidth: 2, strokeDasharray: "8,8" };
+
+  for (const cp of controlPoints) {
+    const style = cp.renderType === 'Start' ? startPointStyle : 
+      (cp.renderType === 'KeyPoint' ? keyPointStyle :
+      (cp.renderType === 'Arc' ? circleCenterStyle :
+      (cp.renderType === 'Bezier' ? bezierControlStyle : keyPointStyle)));
+    let r = Parser.getControlPointPosition(cp);
+    const { px, py } = settings.worldToCanvas(r.x, r.y);
+    const newElement = (
+      <circle
+        key={`control-point-free-${px}-${py}`}
+        cx={px}
+        cy={py}
+        {...style}
+      />
+    );
+    elements.push(newElement);
+  }
 
   // Horizontal lines
   const dashLineStyle = { stroke: "#ccc", strokeWidth: 1, strokeDasharray: "6,6" };
@@ -60,15 +88,6 @@ function drawGrid(
 
   // Draw mover paths
   {
-    const lineStyle = { stroke: "#000", strokeWidth: 2, fill: "none" };
-    const arcStyle = { stroke: "#08f", strokeWidth: 2, fill: "none" };
-    const bezierStyle = { stroke: "#80f", strokeWidth: 2, fill: "none" };
-    const keyPointStyle = { stroke: "#aaa", strokeWidth: 1, fill: "#ccc", r: 4 };
-    const arcAssistLineStyle = { stroke: "#9df", strokeWidth: 2, strokeDasharray: "8,8" };
-    const circleCenterStyle = { stroke: "#08f", strokeWidth: 1, fill: "#9df", r: 3 };
-    const bezierControlStyle = { stroke: "#80f", strokeWidth: 1, fill: "#d9f", r: 3 };
-    const bezierAssistLineStyle = { stroke: "#d9f", strokeWidth: 2, strokeDasharray: "8,8" };
-
     let lastPosition = new Vector2(0, 0);
     let lastDirection = new Vector2(1, 0);
     let counter = 0;
@@ -159,15 +178,15 @@ function drawGrid(
                   />
                 );
                 elements.push(radiusElement2);
-                const centerCircleElement = (
-                  <circle
-                    key={`arc-center-circle-${counter}-${cx}-${cy}`}
-                    cx={cx}
-                    cy={cy}
-                    {...circleCenterStyle}
-                  />
-                );
-                elements.push(centerCircleElement);
+                // const centerCircleElement = (
+                //   <circle
+                //     key={`arc-center-circle-${counter}-${cx}-${cy}`}
+                //     cx={cx}
+                //     cy={cy}
+                //     {...circleCenterStyle}
+                //   />
+                // );
+                // elements.push(centerCircleElement);
               }
             }
             else if (path instanceof ApproxBezier) {
@@ -220,40 +239,40 @@ function drawGrid(
                   />
                 );
                 elements.push(controlLine2);
-                const controlPoint1 = (
-                  <circle
-                    key={`bezier-control-point1-${counter}-${c1.px}-${c1.py}`}
-                    cx={c1.px}
-                    cy={c1.py}
-                    {...bezierControlStyle}
-                  />
-                );
-                elements.push(controlPoint1);
-                const controlPoint2 = (
-                  <circle
-                    key={`bezier-control-point2-${counter}-${c2.px}-${c2.py}`}
-                    cx={c2.px}
-                    cy={c2.py}
-                    {...bezierControlStyle}
-                  />
-                );
-                elements.push(controlPoint2);
+                // const controlPoint1 = (
+                //   <circle
+                //     key={`bezier-control-point1-${counter}-${c1.px}-${c1.py}`}
+                //     cx={c1.px}
+                //     cy={c1.py}
+                //     {...bezierControlStyle}
+                //   />
+                // );
+                // elements.push(controlPoint1);
+                // const controlPoint2 = (
+                //   <circle
+                //     key={`bezier-control-point2-${counter}-${c2.px}-${c2.py}`}
+                //     cx={c2.px}
+                //     cy={c2.py}
+                //     {...bezierControlStyle}
+                //   />
+                // );
+                // elements.push(controlPoint2);
               }
             }
             const ce = path.atEnd();
             lastPosition = ce.position;
             lastDirection = ce.direction;
             // draw a circle at last position
-            const { px, py } = settings.worldToCanvas(lastPosition.x, lastPosition.y);
-            const circleElement = (
-              <circle
-                key={`end-circle-${counter}-${px}-${py}`}
-                cx={px}
-                cy={py}
-                {...keyPointStyle}
-              />
-            );
-            elements.push(circleElement);
+            // const { px, py } = settings.worldToCanvas(lastPosition.x, lastPosition.y);
+            // const circleElement = (
+            //   <circle
+            //     key={`end-circle-${counter}-${px}-${py}`}
+            //     cx={px}
+            //     cy={py}
+            //     {...keyPointStyle}
+            //   />
+            // );
+            // elements.push(circleElement);
           }
         } else {
           console.log("Unsupported path type in CanvasContainer");
@@ -264,6 +283,15 @@ function drawGrid(
     }
   }
 
+  return elements;
+}
+
+function drawMovingObjects(
+  settings: CanvasSetting,
+  mover: SequencedMover,
+  ticks: number,
+): JSX.Element[] {
+  const elements = [];
   // draw moving object
   const totalDuration = mover.totalDuration;
   const startTick = ticks % 60;
@@ -299,25 +327,83 @@ function drawGrid(
     );
     elements.push(triangle);
   }
-
-  setSVGlements(elements);
+  return elements;
 }
 
-export default function CanvasContainer({ settings, mover }: Props) {
+export default function CanvasContainer({ settings, program, setProgram }: Props) {
   const rafRef = useRef<number | null>(null);
-  const [svgElements, setSvgElements] = useState<JSX.Element[]>([]);
+  const [pathElements, setPathElements] = useState<JSX.Element[]>([]);
+  const [movingObjectElements, setMovingObjectElements] = useState<JSX.Element[]>([]);
   const [ticks, setTicks] = useState(0);
+  const [dragState, setDragState] = useState<null | {
+    controlPointIndex: number;
+    downWorld: Vector2;
+  }>(null);
 
   const settingsRef = useRef(settings);
-  const moverRef = useRef(mover);
+  const programRef = useRef(program);
   const ticksRef = useRef(0);
+  const controlPoints = program.toControlPoints();
+
+  const onMouseDown = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    const controlPointPositions = controlPoints.map(cp => Parser.getControlPointPosition(cp));
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = (e.clientX - rect.left);
+    const mouseY = (e.clientY - rect.top);
+    const mouseWorldPos = settings.canvasToWorld(mouseX, mouseY);
+    for (let i = 0; i < controlPointPositions.length; i++) {
+      const cpPos = controlPointPositions[i];
+      const dx = mouseWorldPos.x - cpPos.x;
+      const dy = mouseWorldPos.y - cpPos.y;
+      const distanceSq = dx * dx + dy * dy;
+      const threshold = 0.3;
+      if (distanceSq < threshold * threshold) {
+        setDragState({
+          controlPointIndex: i,
+          downWorld: new Vector2(mouseWorldPos.x, mouseWorldPos.y),
+        });
+        console.log("i=", i, "controlPoint=", controlPoints[i]);
+        e.preventDefault();
+        return;
+      }
+    }
+  };
+
+  const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    if (dragState == null) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = (e.clientX - rect.left);
+    const mouseY = (e.clientY - rect.top);
+    const mouseWorldPos = settings.canvasToWorld(mouseX, mouseY);
+    const newProgram = program.applyChange(
+      controlPoints[dragState.controlPointIndex],
+      new Vector2(mouseWorldPos.x, mouseWorldPos.y),
+    );
+    setProgram(newProgram);
+    e.preventDefault();
+  }
+
+  const onMouseUp = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    if (dragState == null) return;
+    setDragState(null);
+    e.preventDefault();
+  }
   
   useEffect(() => {
     settingsRef.current = settings;
-    moverRef.current = mover;
+    programRef.current = program;
     ticksRef.current = ticks;
-  }, [settings, mover, ticks]);
+  }, [settings, program, ticks]);
 
+  // when program changes, update the path elements
+  useEffect(() => {
+    if (program) {
+      const sequencedMover = program.toSequencedMover();
+      setPathElements(drawPath(settings, sequencedMover, controlPoints));
+    }
+  }, [program, settings]);
+
+  // Animation loop, update moving objects
   useEffect(() => {
     let lastTime: number | null = null;
     const frame = (time: number) => {
@@ -328,9 +414,10 @@ export default function CanvasContainer({ settings, mover }: Props) {
       lastTime = time;
       
       const s = settingsRef.current;
-      const m = moverRef.current;
+      const p = programRef.current;
       const t = ticksRef.current;
-      drawGrid(s, m, t, setSvgElements);
+      const sequencedMover = p.toSequencedMover();
+      setMovingObjectElements(drawMovingObjects(s, sequencedMover, t));
       setTicks(prev => prev + deltaTime * 60);
       
       rafRef.current = requestAnimationFrame(frame);
@@ -352,8 +439,12 @@ export default function CanvasContainer({ settings, mover }: Props) {
           width: settings.width * settings.scale,
           height: settings.height * settings.scale,
         }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
       >
-        {svgElements}
+        {pathElements}
+        {movingObjectElements}
       </svg>
     </div>
   );
