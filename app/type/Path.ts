@@ -149,11 +149,15 @@ class BezierCurve {
 }
 
 class SegmentedPath extends PathBase {
+    startPosition: Vector2;
+    startDirection: Vector2;
     curves: Array<Path>;
     cumulativeLengths: Array<number>;
     totalLength: number;
-    constructor(curves: Array<Path>) {
+    constructor(startPosition: Vector2, startDirection: Vector2, curves: Array<Path>) {
         super();
+        this.startPosition = startPosition;
+        this.startDirection = startDirection;
         this.curves = curves;
         this.cumulativeLengths = [];
         this.totalLength = 0;
@@ -183,8 +187,8 @@ class SegmentedPath extends PathBase {
     at(t: number): CEval {
         if (this.totalLength === 0) {
             return {
-                position: new Vector2(0, 0),
-                direction: new Vector2(0, 0),
+                position: this.startPosition,
+                direction: this.startDirection,
             };
         }
         const clampedT = Math.max(0, Math.min(this.totalLength, t));
@@ -210,9 +214,9 @@ class ApproxBezier extends PathBase {
             curveSegments.push(new LineSegment(prevPoint, currPoint));
             prevPoint = currPoint;
         }
-        this.inner = new SegmentedPath(curveSegments);
-        this.cStart = this.inner.atStart();
-        this.cEnd = this.inner.atEnd();
+        this.cStart = { position: bezier.evaluate(0), direction: bezier.derivative(0).normalized() };
+        this.cEnd = { position: bezier.evaluate(1), direction: bezier.derivative(1).normalized() };
+        this.inner = new SegmentedPath(this.cStart.position, this.cStart.direction, curveSegments);
     }
     length(): number {
         return this.inner.length();

@@ -4,7 +4,8 @@ import { Vector2, Path } from "./Path";
 
 type MEval = {
     position: Vector2;
-    velocity: Vector2;
+    direction: Vector2;
+    speed: number;
 }
 
 abstract class Mover {
@@ -33,12 +34,10 @@ class SimpleMover extends Mover {
         // calculate velocity
         const curveDeriv = this.curve.derivative(relativeTime);
         const pathLength = this.path.length();
-        const velocity = evalAtT.direction.multiply(
-            (curveDeriv * pathLength) / this.duration
-        );
         return {
             position: evalAtT.position,
-            velocity: velocity,
+            direction: evalAtT.direction,
+            speed: (curveDeriv * pathLength) / this.duration
         };
     }
 }

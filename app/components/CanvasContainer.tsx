@@ -298,9 +298,9 @@ function drawMovingObjects(
   // console.log("Starttick:", startTick, "TotalDuration:", totalDuration);
   for (let t = startTick; t <= totalDuration; t += 60) {
     // console.log("Drawing moving object at t =", t);
-    const {position, velocity} = mover.evaluate(t);
+    const {position, direction} = mover.evaluate(t);
     // draw a triangle at position, pointing in the direction of velocity
-    const angle = Math.atan2(velocity.y, velocity.x);
+    const angle = Math.atan2(direction.y, direction.x);
     const size = 0.15;
     const p1 = settings.worldToCanvas(
       position.x + size * Math.cos(angle),

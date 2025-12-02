@@ -5,11 +5,15 @@ import { Curve, SmoothStepCurve, UniformCurve, SineCurve, CosineCurve, InverseSm
 
 class PathBuilder {
 
+    startPosition: Vector2;
+    startDirection: Vector2;
     lastDirection: Vector2;
     lastPosition: Vector2;
     paths: Array<Path>;
 
     constructor(lastPosition: Vector2 = new Vector2(0, 0), lastDirection: Vector2 = new Vector2(1, 0)) {
+        this.startPosition = lastPosition;
+        this.startDirection = lastDirection;
         this.lastDirection = lastDirection;
         this.lastPosition = lastPosition;
         this.paths = [];
@@ -82,7 +86,7 @@ class PathBuilder {
     }
 
     Build(): Path {
-        return new SegmentedPath(this.paths);
+        return new SegmentedPath(this.startPosition, this.startDirection, this.paths);
     }
 
 }

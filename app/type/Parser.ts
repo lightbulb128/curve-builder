@@ -137,7 +137,7 @@ type PathStatement =
 
 type MoverStatement = {
     kind: 'MoverMethod';
-    method: 'Uniform' | 'Sine' | 'Cosine' | 'SmoothStep' | 'InverseSmoothStep';
+    method: 'Uniform' | 'Sine' | 'Cosine' | 'SmoothStep' | 'InverseSmoothStep' | 'Wait';
     duration: number;
     pathStatements: Array<PathStatement>;
 }
@@ -222,6 +222,8 @@ class Program {
                 builder.SmoothStep(ms.duration, pathBuilder);
             } else if (ms.method === 'InverseSmoothStep') {
                 builder.InverseSmoothStep(ms.duration, pathBuilder);
+            } else if (ms.method === 'Wait') {
+                builder.Uniform(ms.duration, pathBuilder);
             }
         }
         return builder.Build();
@@ -495,15 +497,15 @@ class Program {
                 } else if (ps.kind === 'Line') {
                     ret += indent.repeat(2) + `.Line(${vecstring(ps.end)})\n`;
                 } else if (ps.kind === 'LineContinue') {
-                    ret += indent.repeat(2) + `.LineContinue(${ps.length}f)\n`;
+                    ret += indent.repeat(2) + `.LineContinue(${ps.length.toFixed(3)}f)\n`;
                 } else if (ps.kind === 'Arc') {
-                    ret += indent.repeat(2) + `.Arc(${vecstring(ps.center)}, ${ps.angleRadian}f)\n`;
+                    ret += indent.repeat(2) + `.Arc(${vecstring(ps.center)}, ${ps.angleRadian.toFixed(3)}f)\n`;
                 } else if (ps.kind === 'ArcContinue') {
-                    ret += indent.repeat(2) + `.ArcContinue(${ps.radius}f, ${ps.angleRadian}f)\n`;
+                    ret += indent.repeat(2) + `.ArcContinue(${ps.radius.toFixed(3)}f, ${ps.angleRadian.toFixed(3)}f)\n`;
                 } else if (ps.kind === 'Bezier') {
                     ret += indent.repeat(2) + `.Bezier(${vecstring(ps.c1)}, ${vecstring(ps.c2)}, ${vecstring(ps.end)}, ${ps.segments})\n`;
                 } else if (ps.kind === 'BezierContinue') {
-                    ret += indent.repeat(2) + `.BezierContinue(${ps.c1Offset}f, ${vecstring(ps.c2)}, ${vecstring(ps.end)}, ${ps.segments})\n`;
+                    ret += indent.repeat(2) + `.BezierContinue(${ps.c1Offset.toFixed(3)}f, ${vecstring(ps.c2)}, ${vecstring(ps.end)}, ${ps.segments})\n`;
                 }
             }
             ret += indent + `)` + (i === this.moverStatements.length - 1 ? ";\n" : "\n");
@@ -682,10 +684,10 @@ class Parser {
             if (typeof result === 'string') return result;
             items.push(result);
         }
-        if (methodToken === "Uniform" || methodToken === "Sine" || methodToken === "Cosine" || methodToken === "SmoothStep" || methodToken === "InverseSmoothStep") {
+        if (methodToken === "Uniform" || methodToken === "Sine" || methodToken === "Cosine" || methodToken === "SmoothStep" || methodToken === "InverseSmoothStep" || methodToken === "Wait") {
             return {
                 kind: 'MoverMethod',
-                method: methodToken as 'Uniform' | 'Sine' | 'Cosine' | 'SmoothStep' | 'InverseSmoothStep',
+                method: methodToken as 'Uniform' | 'Sine' | 'Cosine' | 'SmoothStep' | 'InverseSmoothStep' | 'Wait',
                 duration: duration,
                 pathStatements: items,
             };
